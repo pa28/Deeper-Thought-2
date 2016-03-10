@@ -20,8 +20,9 @@
  * Modification Log:
  * Rev.  Date       By              Description
  * ------------------------------------------------------------------------
- * 1.0   2016.02.23 Norman Davie    Initial release
- * 2.0   2016.02.26 Tim Wells       See details below
+ * 1.0   2016.02.23 Norman Davie       Initial release
+ * 2.0   2016.02.26 Tim Wells          See details below
+ * 2.01  2016.03.09 David C. Eilering  Minor bug fixes related to Link light
  * 
  *****************************************************************************
  * 	Version 2.0 by Tim Wells
@@ -83,6 +84,17 @@
  *		To run in the terminal window run:
  *			sudo /usr/bin/deeper
  * 		
+ *****************************************************************************
+ * 	Version 2.01 by David C. Eilering
+ *
+ *  Minor bug fixes related to the Link light
+ *
+ *  When switching from other modes to the Binary Clock mode (6) or the Dim mode (5), the Link light
+ *  isn't been reset.  If the Link light is on when the mode is switched, the Link light stays on
+ *  when the Binary Clock or Dim mode starts.  A consistent example of this bug can be seen by
+ *  switching from the Test mode (0) to the Binary Clock mode or Dim mode.  When switching from Normal
+ *  mode the bug only occurs if the Link light happened to be on when the mode is switched.  Resetting
+ *  the Link light in the Binary Clock mode and the Dim mode fixes this bug.
  *****************************************************************************
  */
 
@@ -365,6 +377,8 @@ int main( int argc, char *argv[] )
 			STORE(ionLED,     1);
 			STORE(fetchLED,   1);
 			// Randomly blink first column of operation LEDs
+			// Reset the Link light (bug fixed in v2.01 by David C. Eilering)
+			STORE(linkLED, 0);
 			STORE(andLED, rand_flag(100,50));
 			STORE(tadLED, rand_flag(100,5));
 			STORE(iszLED, rand_flag(100,10));
@@ -386,6 +400,8 @@ int main( int argc, char *argv[] )
 			STORE(dataField,         0);
 			STORE(instField,         0);
 			//STORE(linkLED, rand_flag(100,20));
+			// Reset the Link light (bug fixed in v2.01 by David C. Eilering)
+			STORE(linkLED, 0);
 			STORE(deferLED, 0);
 			STORE(wordCountLED, 0);
 			STORE(currentAddressLED, 0);
