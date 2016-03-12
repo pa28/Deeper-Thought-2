@@ -18,7 +18,7 @@
  * The file gpio.c and gpio.h were copied from Oscar's PDP-8/simH project
  *
  * Modification Log:
- * Rev.  Date       By              Description
+ * Rev.  Date       By                 Description
  * ------------------------------------------------------------------------
  * 1.0   2016.02.23 Norman Davie       Initial release
  * 2.0   2016.02.26 Tim Wells          See details below
@@ -34,8 +34,8 @@
  * 		110 = Binary Clock (From top to bottom: Hour, Minute, Second, Month, Day)
  * 		001 = Snake Mode (3 LEDs move across a row then down to the next row in the opposite direction)
  * 		000 = Test Mode (All LEDs on steady, except some of the columns of LEDs on the right blink off for 20ms)
- *		010 = {Spare}
- *		100 = {Spare}
+  *		010 = Pong Mode (Bouncing Ball)
+*		100 = {Spare}
  * 
  * 	Expanded the timing switches from 6 to 12 switches
  * 		The third brown and third white switch groups control the maximum delay (slowest speed)
@@ -90,11 +90,17 @@
  *  Minor bug fixes related to the Link light
  *
  *  When switching from other modes to the Binary Clock mode (6) or the Dim mode (5), the Link light
- *  isn't been reset.  If the Link light is on when the mode is switched, the Link light stays on
+ *  isn't being reset.  If the Link light is on when the mode is switched, the Link light stays on
  *  when the Binary Clock or Dim mode starts.  A consistent example of this bug can be seen by
  *  switching from the Test mode (0) to the Binary Clock mode or Dim mode.  When switching from Normal
  *  mode the bug only occurs if the Link light happened to be on when the mode is switched.  Resetting
  *  the Link light in the Binary Clock mode and the Dim mode fixes this bug.
+ *****************************************************************************
+ * 	Version 2.10 by David C. Eilering
+ *
+ *  Removed random delay in Snake mode
+ *  Added Pong mode (2) (written by Norman Davie)
+ *  Added feature to Pong mode to allow the switches to control the ball speed
  *****************************************************************************
  */
 
@@ -207,6 +213,36 @@ int rand_flag( int max_rand, int max_true )
 	}
 }
 
+void ClearAllLEDs()	// function added by Norman Davie - used by Pong mode
+{
+	STORE(programCounter,    0);
+	STORE(dataField,         0);
+	STORE(instField,         0);
+	STORE(linkLED,           0);
+	STORE(programCounter,    0);
+	STORE(memoryAddress,     0);
+	STORE(memoryBuffer,      0);
+	STORE(accumulator,       0);
+	STORE(multiplierQuotient,0);
+	STORE(stepCounter,       0);
+	STORE(andLED,            0);
+	STORE(tadLED,            0);
+	STORE(iszLED,            0);
+	STORE(dcaLED,            0);
+	STORE(jmsLED,            0);
+	STORE(iotLED,            0);
+	STORE(jmpLED,            0);
+	STORE(oprLED,            0);
+	STORE(fetchLED,          0);
+	STORE(executeLED,        0);
+	STORE(deferLED,          0);
+	STORE(wordCountLED,      0);
+	STORE(currentAddressLED, 0);
+	STORE(breakLED,          0);
+	STORE(ionLED,            0);
+	STORE(pauseLED,          0);
+	STORE(runLED,            0);
+}
 
 int main( int argc, char *argv[] )
 {
@@ -370,6 +406,8 @@ int main( int argc, char *argv[] )
 			STORE(dataField,         0);
 			STORE(instField,         0);
 			//STORE(linkLED, rand_flag(100,20));
+			// Reset the Link light (bug fixed in v2.01 by David C. Eilering)
+			STORE(linkLED, 0);
 			STORE(deferLED, 0);
 			STORE(wordCountLED, 0);
 			STORE(currentAddressLED, 0);
@@ -377,8 +415,6 @@ int main( int argc, char *argv[] )
 			STORE(ionLED,     1);
 			STORE(fetchLED,   1);
 			// Randomly blink first column of operation LEDs
-			// Reset the Link light (bug fixed in v2.01 by David C. Eilering)
-			STORE(linkLED, 0);
 			STORE(andLED, rand_flag(100,50));
 			STORE(tadLED, rand_flag(100,5));
 			STORE(iszLED, rand_flag(100,10));
@@ -495,10 +531,84 @@ int main( int argc, char *argv[] )
 			STORE(jmpLED, rand_flag(100,60));
 			STORE(iotLED, rand_flag(100,40));
 			STORE(oprLED, rand_flag(100,40));
+			
+			// Don't include random delay in snake mode (added v2.10 by David C. Eilering)
+			sleepTime = delayAmount;
 			break;
 			
-			break;
+			// break;
 			
+			case 2: //010 pong / bouncing ball (by Norman Davie)
+        	  {
+         		static long xDirection = 1;
+	 	        static long yDirection = 1;
+		        static long ball = 1;
+          		static long yBall = 1;
+
+          		ClearAllLEDs();
+
+          		// switch directions if we're too far right
+          		if ((ball >> 1) < 1)
+         		{
+            		xDirection = 1;
+          		}
+
+          		// switch directions if we're too far left
+          		if ((ball << 1) > (unsigned long) memoryBuffer[2])
+	          	{
+		        	xDirection = 0;
+		        }
+
+          		if (xDirection)
+				{
+             		ball = ball << 1;
+          		}
+
+          		if (xDirection)
+             		ball = ball << 1;
+          		else
+             		ball = ball >> 1;
+
+          		yBall = yBall + yDirection;
+          		switch(yBall)
+          		{
+          			case 0:  // too far up
+             			yDirection = 1;
+             			yBall = 1;
+             			break;
+          			case 6: // too far down
+             			yDirection = -1;
+             			yBall = 5;
+          		}
+
+          		// store the value in the appropriate row
+          		switch(yBall)
+          		{
+          		case 1:
+             			STORE(multiplierQuotient, ball);
+             			break;
+          		case 2:
+             			STORE(accumulator, ball);
+             			break;
+          		case 3:
+             			STORE(memoryBuffer, ball);
+             			break;
+          		case 4:
+             			STORE(memoryAddress, ball);
+             			break;
+          		case 5:
+             			STORE(programCounter, ball);
+             			break;
+          		default:
+             			break;
+          		}
+          		// sleepTime = 50 * 1000;
+				// Allow the switches to control the ball speed (added v2.10 by David C. Eilering)
+          		sleepTime = delayAmount;
+
+        	  }
+        	  break;
+			  
 		  default:
 			STORE(programCounter,    rand() & programCounter[2]);
 			STORE(memoryAddress,     rand() & memoryAddress[2]);
