@@ -13,7 +13,7 @@ Deeper Thought 2 is a fork of [Deeper Thought by Norman Davie](https://groups.go
 * **001** = Snake Mode (3 LEDs move across a row then down to the next row in the opposite direction)
 * **000** = Test Mode (All LEDs on steady, except some of the columns of LEDs on the right blink off for 20ms)
 * **010** = Pong Mode / Bouncing ball - by Norman Davie
-* **100** = {Spare}
+* **100** = Text scroller
 
 #####Expanded the timing switches from 6 to 12 switches
 * The third brown and third white switch groups from the left control the maximum delay (slowest speed)
