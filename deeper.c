@@ -113,7 +113,7 @@
  *  using the full 5 pixel width).  The font includes all symbols from ASCII
  *  32 (space) to ASCII 126 (tilde).  Characters outside of this range are
  *  ignored.  When the message has finished scrolling, it repeats from the
- *  beginning.  The program looks for a text file /home/pdp/scroll01.txt  If
+ *  beginning.  The program looks for a text file /home/pdp/scrollText.txt  If
  *  the file is not found, a hard-coded welcome message is displayed.  If the
  *  file is found the text is loaded from all lines into a single long string
  *  of characters.  The characters are run together from one line to the next.
