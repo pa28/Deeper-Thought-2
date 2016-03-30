@@ -343,7 +343,7 @@ int main( int argc, char *argv[] )
 
 	if (my_file == NULL) {
 		strcat(msg, "Welcome to the PiDP 8/I text scroller by David C. Eilering.   ");
-		strcat(msg, "To cusomize this message enter the desired text into the file ");
+		strcat(msg, "To customize this message enter the desired text into the file ");
 		strcat(msg, my_fname);
 		strcat(msg, "   ");
 		strcat(msg, "For more information, visit https://github.com/VentureKing/Deeper-Thought-2   ");
