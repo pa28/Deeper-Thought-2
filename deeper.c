@@ -25,6 +25,7 @@
  * 2.01  2016.03.09 David C. Eilering  Minor bug fixes related to Link light
  * 2.10  2016.03.12 David C. Eilering  Added Pong mode and minor bug fixes
  * 2.20  2016.03.29 David C. Eilering  Added Text scroller mode
+ * 2.21  2016.03.30 David C. Eilering  Added loadMsg function
  *****************************************************************************
  * 	Version 2.0 by Tim Wells
  * 
@@ -137,6 +138,18 @@
  *
  *  As with other modes that allow variable speed, the front panel switches
  *  control the speed of the scrolling.
+ *****************************************************************************
+ * 	Version 2.21 by David C. Eilering
+ *
+ *  Added loadMsg function
+ *
+ *  Putting the file reading code into a function allows the loadMsg function
+ *  to be called within the main loop of the program.  This allows the message
+ *  to be modified by changing the file while the program is running.
+ *
+ *  Also changed the hard-coded message to mostly uppercase to improve
+ *  readability.  Added the date/time at the end of the message as a way to
+ *  demonstrate how messages can be changed dynamically.
  *****************************************************************************
  */
 
@@ -281,6 +294,41 @@ void ClearAllLEDs()	// function added by Norman Davie - used by Pong mode
 	STORE(runLED,            0);
 }
 
+void loadMsg(char *tmpMsg) {
+	char my_line[256];
+	char *my_fname = "/home/pdp/scrollText.txt";
+	FILE *my_file;
+	my_file = fopen(my_fname, "r");
+	time_t t = time(NULL);
+	
+	strcpy(tmpMsg, "");
+	
+	if (my_file == NULL) {
+		strcat(tmpMsg, "WELCOME TO THE PiDP-8/I TEXT SCROLLER BY DAVID C. EILERING.   ");
+		strcat(tmpMsg, "TO CUSTOMIZE THIS MESSAGE, ENTER THE DESIRED TEXT INTO THE FILE ");
+		strcat(tmpMsg, my_fname);
+		strcat(tmpMsg, "   ");
+		strcat(tmpMsg, "FOR MORE INFORMATION, VISIT https://github.com/VentureKing/Deeper-Thought-2   ");
+		strcat(tmpMsg, "THE CURRENT DATE/TIME IS: ");
+		strcat(tmpMsg, asctime(localtime(&t)));
+		strcat(tmpMsg, "   ");
+	}
+	else {
+		while (fgets(my_line, sizeof(my_line), my_file)) {
+			// replace carriage return with null
+			for (int i = 255; i > 0; i--) {
+				if (my_line[i] == 0x0A) {
+					my_line[i] = 0x00;
+				}
+			}
+			
+			strcat(tmpMsg, my_line);
+		}
+		fclose(my_file);
+	}
+}
+
+
 int main( int argc, char *argv[] )
 {
   pthread_t     thread1;
@@ -335,34 +383,9 @@ int main( int argc, char *argv[] )
 		0x08CEB98D, 0x00001B22, 0x000000F9, 0x000004DA, 0x01104115
 	};
 
-	char *my_fname = "/home/pdp/scrollText.txt";
-	FILE *my_file;
 	char msg[2048] = "";
-	char my_line[256];
-	my_file = fopen(my_fname, "r");
-
-	if (my_file == NULL) {
-		strcat(msg, "Welcome to the PiDP 8/I text scroller by David C. Eilering.   ");
-		strcat(msg, "To customize this message enter the desired text into the file ");
-		strcat(msg, my_fname);
-		strcat(msg, "   ");
-		strcat(msg, "For more information, visit https://github.com/VentureKing/Deeper-Thought-2   ");
-	}
-	else {
-		while (fgets(my_line, sizeof(my_line), my_file)) {
-			// replace carriage return with null
-			for (int i = 255; i > 0; i--) {
-				if (my_line[i] == 0x0A) {
-					my_line[i] = 0x00;
-				}
-			}
-			
-			strcat(msg, my_line);
-		}
-		fclose(my_file);
-	}
 	
-	int msgLen = strlen(msg);
+	int msgLen;
 	int charNum;
 	int charWidth;
 	int currChar;
@@ -717,6 +740,11 @@ int main( int argc, char *argv[] )
 			STORE(dataField,   0);
 			STORE(instField,   0);
 			STORE(linkLED,     0);
+
+			if (msgPos == 0 && charPos == 0) {
+				loadMsg(msg);
+				msgLen = strlen(msg);
+			}
 
 			// invalid character - skip it
 			if (msg[msgPos] < 32 || 126 < msg[msgPos]) {
