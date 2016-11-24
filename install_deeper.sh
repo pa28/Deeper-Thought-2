@@ -36,7 +36,7 @@ case "$1" in
 		echo "Disabling auto-start for Deeper Thought..."
 		update-rc.d deeper remove
 		echo "Enabling auto-start for PiDP-8 simulator..."
-		update-rc.d pidp8 default
+		update-rc.d pidp8 defaults
 		;;
 	*)
 		echo "Disabling auto-start for PiDP-8 simulator..."
