@@ -241,6 +241,7 @@ int opled_delay = 20000;
 void sig_handler(int signo) {
     if (signo == SIGINT || signo == SIGTERM)
         terminate = 1;
+    printf("Signal %d\n", signo);
 }
 
 // Random flag value with a fixed probability
