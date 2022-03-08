@@ -807,6 +807,15 @@ int main(int argc, char *argv[]) {
                     STORE(jmpLED, rand_flag(100, 60));
                     STORE(iotLED, rand_flag(100, 40));
                     STORE(oprLED, rand_flag(100, 40));
+
+                    STORE(pauseLED, rand_flag(100, 50));
+                    STORE(linkLED, rand_flag(100, 50));
+                    STORE(deferLED, rand_flag(100, 50));
+                    STORE(wordCountLED, rand_flag(100, 50));
+                    STORE(currentAddressLED, rand_flag(100, 50));
+                    STORE(breakLED, rand_flag(100, 50));
+                    STORE(ionLED, rand_flag(100, 50));
+                    STORE(fetchLED, rand_flag(100, 50));
                     break;
             }
         } else {
