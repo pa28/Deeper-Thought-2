@@ -239,7 +239,7 @@ int opled_delay = 20000;
 
 // Handle CTRL-C
 void sig_handler(int signo) {
-    if (signo == SIGINT)
+    if (signo == SIGINT || signo == SIGTERM)
         terminate = 1;
 }
 
